@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+/model-downloads/glove.6B.50d.txt
+/model-downloads/glove.6B.100d.txt
+/model-downloads/glove.6B.200d.txt
+/model-downloads/glove.6B.300d.txt
