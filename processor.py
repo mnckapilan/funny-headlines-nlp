@@ -1,3 +1,6 @@
+import codecs
+
+import numpy as np
 import torch
 from torch.utils.data import random_split
 
@@ -39,19 +42,43 @@ def create_vocab(data):
     return vocabulary, tokenized_corpus
 
 
-def get_word2idx(vocab):
-    word2idx = {w: idx + 1 for (idx, w) in enumerate(vocab)}
-    # we reserve the 0 index for the padding token
-    word2idx['<pad>'] = 0
-    return word2idx
-
-
 def lowercase_dataset(data):
     for sentence in data:
         sentence.lower()
 
 
-def vectorize_sentences(tokenized_corpus, word2idx):
+def build_glove_tensor(vocab):
+    glove_vectors = []
+    with codecs.open('model-downloads/glove.6B.100d.txt', 'r', 'utf-8') as f:
+        for line in f.readlines():
+            if len(line.strip().split()) > 3:
+                word = line.strip().split()[0]
+                if word in vocab:
+                    (word, vec) = (word, list(map(float, line.strip().split()[1:])))
+                    glove_vectors.append(vec)
+    return torch.from_numpy(np.array(glove_vectors))
+
+# def build_glove_embedding_matrix(word2idx, max_len):
+#     embeddings_index = {}
+#     with open('glove.6B.100d.txt') as f:
+#         for line in f:
+#             values = line.split()
+#             word = values[0]
+#             coefs = np.asarray(values[1:], dtype='float32')
+#             embeddings_index[word] = coefs
+#
+#     embedding_matrix = np.zeros((len(word2idx) + 1, 26))
+#     for word, i in word2idx.items():
+#         embedding_vector = embeddings_index.get(word)
+#         if embedding_vector is not None:
+#             embedding_matrix[i] = embedding_vector
+#     return embedding_matrix
+
+
+def vectorize_sentences(tokenized_corpus, vocab):
+    word2idx = {w: idx + 1 for (idx, w) in enumerate(vocab)}
+    # we reserve the 0 index for the padding token
+    word2idx['<pad>'] = 0
     return [[word2idx[tok] for tok in sentence if tok in word2idx] for sentence in tokenized_corpus]
 
 
