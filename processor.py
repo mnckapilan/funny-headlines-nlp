@@ -66,13 +66,13 @@ def lookup_glove(word2embedding, word, embedding_dim):
 
 
 def build_embedding_tensor(vocab, embedding_dim=50):
-    glove_vectors = np.zeros((len(vocab), embedding_dim))
+    glove_vectors = np.zeros((len(vocab) + 1, embedding_dim))
     word2embedding = build_glove_dictionary(embedding_dim)
 
     for i, word in enumerate(vocab):
-        glove_vectors[i] = lookup_glove(word2embedding, word, embedding_dim)
+        glove_vectors[i + 1] = lookup_glove(word2embedding, word, embedding_dim)
 
-    return torch.from_numpy(glove_vectors)
+    return torch.from_numpy(glove_vectors).type(torch.float32)
 
 # def build_glove_embedding_matrix(word2idx, max_len):
 #     embeddings_index = {}
