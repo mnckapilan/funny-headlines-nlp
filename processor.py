@@ -47,16 +47,32 @@ def lowercase_dataset(data):
         sentence.lower()
 
 
-def build_glove_tensor(vocab):
-    glove_vectors = []
-    with codecs.open('model-downloads/glove.6B.100d.txt', 'r', 'utf-8') as f:
+def build_glove_dictionary(embedding_dim):
+    word2embedding = {}
+    with codecs.open('model-downloads/glove.6B.{}d.txt'.format(embedding_dim), 'r', 'utf-8') as f:
         for line in f.readlines():
             if len(line.strip().split()) > 3:
                 word = line.strip().split()[0]
-                if word in vocab:
-                    (word, vec) = (word, list(map(float, line.strip().split()[1:])))
-                    glove_vectors.append(vec)
-    return torch.from_numpy(np.array(glove_vectors))
+                word2embedding[word] = np.array(list(map(float, line.strip().split()[1:])))
+
+    return word2embedding
+
+
+def lookup_glove(word2embedding, word, embedding_dim):
+    try:
+        return word2embedding[word]
+    except KeyError:
+        return np.random.normal(size=(embedding_dim, ))
+
+
+def build_embedding_tensor(vocab, embedding_dim=50):
+    glove_vectors = np.zeros((len(vocab), embedding_dim))
+    word2embedding = build_glove_dictionary(embedding_dim)
+
+    for i, word in enumerate(vocab):
+        glove_vectors[i] = lookup_glove(word2embedding, word, embedding_dim)
+
+    return torch.from_numpy(glove_vectors)
 
 # def build_glove_embedding_matrix(word2idx, max_len):
 #     embeddings_index = {}
