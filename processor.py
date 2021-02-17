@@ -30,7 +30,8 @@ def create_vocab(data):
         sentence = sentence.lower()
         tokenized_sentence = []
         for token in sentence.split(' '):  # simplest split is
-            tokenized_sentence.append(token)
+            for tok in token.split('-'):
+                tokenized_sentence.append(tok)
         tokenized_corpus.append(tokenized_sentence)
     # Create single list of all vocabulary
     vocabulary = []  # Let us put all the tokens (mostly words) appearing in the vocabulary in a list
@@ -60,19 +61,24 @@ def build_glove_dictionary(embedding_dim):
 
 def lookup_glove(word2embedding, word, embedding_dim):
     try:
-        return word2embedding[word]
+        return word2embedding[word], False
     except KeyError:
-        return np.random.normal(size=(embedding_dim, ))
+        print("Word " + word)
+        return np.random.normal(size=(embedding_dim, )), True
 
 
 def build_embedding_tensor(vocab, embedding_dim=50):
     glove_vectors = np.zeros((len(vocab) + 1, embedding_dim))
     word2embedding = build_glove_dictionary(embedding_dim)
 
+    words_not_in_glove = 0
     for i, word in enumerate(vocab):
-        glove_vectors[i + 1] = lookup_glove(word2embedding, word, embedding_dim)
+        glove_vec, in_glove = lookup_glove(word2embedding, word, embedding_dim)
+        glove_vectors[i + 1] = glove_vec
+        words_not_in_glove += in_glove
+    print("Number of words not in GloVe: {}".format(words_not_in_glove), flush=True)
 
-    return torch.from_numpy(glove_vectors).type(torch.float32)
+    return torch.from_numpy(glove_vectors).type(torch.float32), words_not_in_glove
 
 # def build_glove_embedding_matrix(word2idx, max_len):
 #     embeddings_index = {}
