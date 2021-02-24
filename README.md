@@ -26,7 +26,6 @@ pip install -r requirements.txt
 ### Opening the main Jupyter Notebook
 ```
 jupyter notebook main.ipynb
-
 ```
 
 Enjoy!
