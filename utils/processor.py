@@ -1,8 +1,8 @@
 import codecs
-
+import re
+from nltk import WordNetLemmatizer
 import numpy as np
 import torch
-from torch.utils.data import random_split
 
 
 def create_edited_sentences(data, edits):
@@ -22,30 +22,24 @@ def remove_tags_sentences(data):
 
 
 def create_vocab(data):
-    """
-    Creating a corpus of all the tokens used
-    """
-    tokenized_corpus = []  # Let us put the tokenized corpus in a list
+    wordnet_lemmatizer = WordNetLemmatizer()
+    tokenized_corpus = []
     for sentence in data:
         sentence = sentence.lower()
         tokenized_sentence = []
         for token in sentence.split(' '):  # simplest split is
             for tok in token.split('-'):
+                tok = re.sub("\d+", "", tok)
+                tok = wordnet_lemmatizer.lemmatize(tok)
                 tokenized_sentence.append(tok)
         tokenized_corpus.append(tokenized_sentence)
-    # Create single list of all vocabulary
-    vocabulary = []  # Let us put all the tokens (mostly words) appearing in the vocabulary in a list
+    vocabulary = []
     for sentence in tokenized_corpus:
         for token in sentence:
             if token not in vocabulary:
                 if True:
                     vocabulary.append(token)
     return vocabulary, tokenized_corpus
-
-
-def lowercase_dataset(data):
-    for sentence in data:
-        sentence.lower()
 
 
 def build_glove_dictionary(embedding_dim):
@@ -55,7 +49,6 @@ def build_glove_dictionary(embedding_dim):
             if len(line.strip().split()) > 3:
                 word = line.strip().split()[0]
                 word2embedding[word] = np.array(list(map(float, line.strip().split()[1:])))
-
     return word2embedding
 
 
@@ -63,8 +56,7 @@ def lookup_glove(word2embedding, word, embedding_dim):
     try:
         return word2embedding[word], False
     except KeyError:
-        print("Word " + word)
-        return np.random.normal(size=(embedding_dim, )), True
+        return np.random.normal(size=(embedding_dim,)), True
 
 
 def build_embedding_tensor(vocab, embedding_dim=50):
@@ -76,30 +68,12 @@ def build_embedding_tensor(vocab, embedding_dim=50):
         glove_vec, in_glove = lookup_glove(word2embedding, word, embedding_dim)
         glove_vectors[i + 1] = glove_vec
         words_not_in_glove += in_glove
-    print("Number of words not in GloVe: {}".format(words_not_in_glove), flush=True)
 
     return torch.from_numpy(glove_vectors).type(torch.float32), words_not_in_glove
-
-# def build_glove_embedding_matrix(word2idx, max_len):
-#     embeddings_index = {}
-#     with open('glove.6B.100d.txt') as f:
-#         for line in f:
-#             values = line.split()
-#             word = values[0]
-#             coefs = np.asarray(values[1:], dtype='float32')
-#             embeddings_index[word] = coefs
-#
-#     embedding_matrix = np.zeros((len(word2idx) + 1, 26))
-#     for word, i in word2idx.items():
-#         embedding_vector = embeddings_index.get(word)
-#         if embedding_vector is not None:
-#             embedding_matrix[i] = embedding_vector
-#     return embedding_matrix
 
 
 def vectorize_sentences(tokenized_corpus, vocab):
     word2idx = {w: idx + 1 for (idx, w) in enumerate(vocab)}
-    # we reserve the 0 index for the padding token
     word2idx['<pad>'] = 0
     return [[word2idx[tok] for tok in sentence if tok in word2idx] for sentence in tokenized_corpus]
 
