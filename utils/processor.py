@@ -44,7 +44,7 @@ def create_vocab(data):
 
 def build_glove_dictionary(embedding_dim):
     word2embedding = {}
-    with codecs.open('model-downloads/glove.6B.{}d.txt'.format(embedding_dim), 'r', 'utf-8') as f:
+    with codecs.open('glove.6B.{}d.txt'.format(embedding_dim), 'r', 'utf-8') as f:
         for line in f.readlines():
             if len(line.strip().split()) > 3:
                 word = line.strip().split()[0]
