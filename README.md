@@ -1,5 +1,5 @@
 # Natural Language Processing - Funny Headlines
-###2020-2021 Natural Language Processing Coursework
+### 2020-2021 Natural Language Processing Coursework
 
 ## Downloading pre-trained models
 If you have GloVe models already downloaded on your machine, drop them into the `model-downloads` folder, and skip the
