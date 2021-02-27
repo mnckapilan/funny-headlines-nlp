@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset
-from utils.common_utils import set_gpu, train
+from utils.common_utils import set_gpu, train, eval, model_performance
 from utils.dataloaders import *
 from utils.processor import *
 
@@ -97,8 +97,29 @@ def run_this_experiment():
     glove_tensor, words_not_in_glove = build_embedding_tensor(joint_vocab, 100)
 
     EMBEDDING_DIM = 100
-    model = CNN_Concat(glove_tensor, len(joint_vocab), EMBEDDING_DIM, 3, 5, 1, 0.2).to(device)
+    model = CNN_Concat(glove_tensor, len(joint_vocab), EMBEDDING_DIM, 3, 3, 1, 0.2).to(device)
     optimizer = optim.Adam(model.parameters())
     loss_fn = nn.MSELoss()
 
-    train(train_loader, validation_loader, model, 200, optimizer, loss_fn, device)
+    train(train_loader, validation_loader, model, 20, optimizer, loss_fn, device)
+
+    # Test data
+    final_testing_df = pd.read_csv('data/task-1/truth_task_1.csv')
+    final_testing_data = final_testing_df['original']
+    final_testing_edits = final_testing_df['edit']
+    final_testing_grades = final_testing_df['meanGrade']
+    final_edited_testing = pd.Series(create_edited_sentences(final_testing_data, final_testing_edits))
+
+    test_vocab, test_tokenized_corpus = create_vocab(final_edited_testing)
+
+    test_vector_sentences = vectorize_sentences(test_tokenized_corpus, test_vocab)
+    test_dataset = Task1Dataset(test_vector_sentences, final_testing_grades)
+
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE,
+                                                    collate_fn=collate_fn_padd)
+
+    _, _, preds, targets = eval(test_loader, model, device, loss_fn)
+
+    model_performance(preds, targets, print_output=True)
+
+    
