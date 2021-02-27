@@ -39,7 +39,8 @@ def run_SVR_experiment():
     model = model.fit(training_bags_of_words, training_gradeset)
     predictions = model.predict(validation_bag_of_words)
 
-    model_performance(predictions, validation_gradeset, print_output=True)
+    test_mse, test_rmse, _ = model_performance(predictions, validation_gradeset)
+    print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')
 
 
 def run_RandomForestRegressor_experiment():
@@ -49,7 +50,8 @@ def run_RandomForestRegressor_experiment():
     model = model.fit(training_bags_of_words, training_gradeset)
     predictions = model.predict(validation_bag_of_words)
 
-    model_performance(predictions, validation_gradeset, print_output=True)
+    test_mse, test_rmse, _ = model_performance(predictions, validation_gradeset)
+    print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')
 
 
 def run_LinearRegression_experiment():
@@ -59,7 +61,8 @@ def run_LinearRegression_experiment():
     model = model.fit(training_bags_of_words, training_gradeset)
     predictions = model.predict(validation_bag_of_words)
 
-    model_performance(predictions, validation_gradeset, print_output=True)
+    test_mse, test_rmse, _ = model_performance(predictions, validation_gradeset)
+    print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')
 
 
 def run_Pipeline_experiment():
@@ -69,4 +72,5 @@ def run_Pipeline_experiment():
     model = model.fit(training_bags_of_words, training_gradeset)
     predictions = model.predict(validation_bag_of_words)
 
-    model_performance(predictions, validation_gradeset, print_output=True)
+    test_mse, test_rmse, _ = model_performance(predictions, validation_gradeset)
+    print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')

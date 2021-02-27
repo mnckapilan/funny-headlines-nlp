@@ -8,36 +8,59 @@ from utils.dataloaders import *
 from utils.processor import *
 
 
-class CNN(nn.Module):
-    def __init__(self, glove, vocab_size, embedding_dim, output_channels, window_size, out_dim, dropout):
-        super(CNN, self).__init__()
+class CNN_Concat(nn.Module):
+    def __init__(self, vocab_size, embedding_dim, output_channels, window_size, out_dim, dropout):
+        super(CNN_Concat, self).__init__()
 
-        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0).from_pretrained(glove)
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
 
-        self.conv = nn.Conv2d(
+        self.conv1 = nn.Conv2d(
             in_channels=1, out_channels=output_channels,
             kernel_size=(window_size, embedding_dim))
 
+        self.conv2 = nn.Conv2d(
+            in_channels=1, out_channels=output_channels,
+            kernel_size=(window_size - 1, embedding_dim))
+
+        self.conv3 = nn.Conv2d(
+            in_channels=1, out_channels=output_channels,
+            kernel_size=(window_size + 1, embedding_dim))
+
         self.drop = nn.Dropout(dropout)
-        self.fc1 = nn.Linear(output_channels, 16)
+        self.fc1 = nn.Linear(output_channels * 3, 16)
         self.fc2 = nn.Linear(16, out_dim)
 
     def forward(self, x):
         x_embed = self.embedding(x)
         x_embed = x_embed.unsqueeze(1)
-        x_embed = self.conv(x_embed)
 
-        x_embed = x_embed.squeeze(3)
+        x1 = self.conv1(x_embed)
+        x1 = x1.squeeze(3)
+        x1 = F.relu(x1)
+        x1 = F.max_pool1d(x1, x1.shape[2])
+        x1 = x1.squeeze(2)
+        # x1 = self.drop(x1)
 
-        x_embed = F.relu(x_embed)
-        x_embed = F.max_pool1d(x_embed, x_embed.shape[2])
+        x2 = self.conv2(x_embed)
+        x2 = x2.squeeze(3)
+        x2 = F.relu(x2)
+        x2 = F.max_pool1d(x2, x2.shape[2])
+        x2 = x2.squeeze(2)
+        # x2 = self.drop(x2)
 
-        x_embed = x_embed.squeeze(2)
+        x3 = self.conv3(x_embed)
+        x3 = x3.squeeze(3)
+        x3 = F.relu(x3)
+        x3 = F.max_pool1d(x3, x3.shape[2])
+        x3 = x3.squeeze(2)
+        # x3 = self.drop(x3)
 
-        x_embed = self.drop(x_embed)
-        x_embed = self.fc1(x_embed)
-        x_embed = self.drop(x_embed)
-        out = self.fc2(x_embed)
+        x = torch.cat((x1, x2, x3), dim=1)
+        x = self.drop(x)
+
+        x = self.fc1(x)
+        x = self.drop(x)
+        out = self.fc2(x)
 
         return out
 
@@ -71,10 +94,8 @@ def run_this_experiment():
     validation_loader = torch.utils.data.DataLoader(validation_dataset, batch_size=BATCH_SIZE,
                                                     collate_fn=collate_fn_padd)
 
-    glove_tensor, words_not_in_glove = build_embedding_tensor(joint_vocab, 100)
-
     EMBEDDING_DIM = 100
-    model = CNN(glove_tensor, len(joint_vocab), EMBEDDING_DIM, 3, 5, 1, 0.2)
+    model = CNN_Concat(len(joint_vocab), EMBEDDING_DIM, 3, 3, 1, 0.2).to(device)
     optimizer = optim.Adam(model.parameters())
     loss_fn = nn.MSELoss()
 
@@ -99,6 +120,3 @@ def run_this_experiment():
 
     test_mse, test_rmse, _ = model_performance(preds, targets)
     print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')
-
-    
-

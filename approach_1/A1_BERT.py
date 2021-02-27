@@ -92,7 +92,7 @@ def train(train_loader, validation_loader, model, number_epoch, optimizer, loss_
             predictions = model(feature).squeeze(1)
             optimizer.zero_grad()
             loss = loss_fn(predictions, target)
-            sse, __ = model_performance(predictions.detach().cpu().numpy(), target.detach().cpu().numpy())
+            mse, rmse, sse = model_performance(predictions.detach().cpu().numpy(), target.detach().cpu().numpy())
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item() * target.shape[0]
@@ -179,9 +179,7 @@ def run_this_experiment():
 
                         _, _, preds, labels = eval(validation_loader, model)
 
-                        _, mse = model_performance(preds, labels, print_output=True)
-
-                        rmse = np.sqrt(mse)
+                        mse, rmse, _ = model_performance(preds, labels, print_output=True)
 
                         print("Current Hyperparameters:")
                         print(

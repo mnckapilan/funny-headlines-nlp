@@ -26,7 +26,7 @@ def model_performance(output, target, print_output=False):
     if print_output:
         print(f'| MSE: {mse:.4f} | RMSE: {rmse:.4f} |')
 
-    return sse, mse
+    return mse, rmse, sse
 
 
 def eval(data_iter, model, device, loss_fn):
@@ -54,7 +54,7 @@ def eval(data_iter, model, device, loss_fn):
 
             # We get the mse
             pred, trg = predictions.detach().cpu().numpy(), target.detach().cpu().numpy()
-            sse, __ = model_performance(pred, trg)
+            mse, rmse, sse = model_performance(pred, trg)
 
             epoch_loss += loss.item()*target.shape[0]
             epoch_sse += sse
@@ -84,7 +84,7 @@ def train(train_loader, validation_loader, model, number_epoch, optimizer, loss_
             predictions = model(feature).squeeze(1)
             optimizer.zero_grad()
             loss = loss_fn(predictions, target)
-            sse, __ = model_performance(predictions.detach().cpu().numpy(), target.detach().cpu().numpy())
+            _, _, sse = model_performance(predictions.detach().cpu().numpy(), target.detach().cpu().numpy())
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()*target.shape[0]
@@ -93,5 +93,5 @@ def train(train_loader, validation_loader, model, number_epoch, optimizer, loss_
         valid_loss, valid_mse, __, __ = eval(validation_loader, model, device, loss_fn)
 
         epoch_loss, epoch_mse = epoch_loss / no_observations, epoch_sse / no_observations
-        print(f'| Epoch: {epoch:02} | Train Loss: {epoch_loss:.4f} | Train MSE: {epoch_mse:.4f} | Train RMSE: {epoch_mse**0.5:.4f} | \
+        print(f'| Epoch: {epoch:02} | Train Loss: {epoch_loss:.4f} | Train MSE: {epoch_mse:.4f} | Train RMSE: {epoch_mse**0.5:.4f} | \n \
         Val. Loss: {valid_loss:.4f} | Val. MSE: {valid_mse:.4f} |  Val. RMSE: {valid_mse**0.5:.4f} |')
