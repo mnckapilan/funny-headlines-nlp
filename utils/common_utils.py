@@ -24,7 +24,7 @@ def model_performance(output, target, print_output=False):
     rmse = np.sqrt(mse)
 
     if print_output:
-        print(f'| MSE: {mse:.2f} | RMSE: {rmse:.2f} |')
+        print(f'| MSE: {mse:.4f} | RMSE: {rmse:.4f} |')
 
     return sse, mse
 
@@ -93,5 +93,5 @@ def train(train_loader, validation_loader, model, number_epoch, optimizer, loss_
         valid_loss, valid_mse, __, __ = eval(validation_loader, model, device, loss_fn)
 
         epoch_loss, epoch_mse = epoch_loss / no_observations, epoch_sse / no_observations
-        print(f'| Epoch: {epoch:02} | Train Loss: {epoch_loss:.2f} | Train MSE: {epoch_mse:.2f} | Train RMSE: {epoch_mse**0.5:.2f} | \
-        Val. Loss: {valid_loss:.2f} | Val. MSE: {valid_mse:.2f} |  Val. RMSE: {valid_mse**0.5:.2f} |')
+        print(f'| Epoch: {epoch:02} | Train Loss: {epoch_loss:.4f} | Train MSE: {epoch_mse:.4f} | Train RMSE: {epoch_mse**0.5:.4f} | \
+        Val. Loss: {valid_loss:.4f} | Val. MSE: {valid_mse:.4f} |  Val. RMSE: {valid_mse**0.5:.4f} |')
