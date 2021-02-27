@@ -19,13 +19,14 @@ def model_performance(output, target, print_output=False):
 
     sq_error = (output - target) ** 2
 
+    sse = np.sum(sq_error)
     mse = np.mean(sq_error)
     rmse = np.sqrt(mse)
 
     if print_output:
         print(f'| MSE: {mse:.4f} | RMSE: {rmse:.4f} |')
 
-    return mse, rmse
+    return mse, rmse, sse
 
 
 def eval(data_iter, model, device, loss_fn):
@@ -53,7 +54,7 @@ def eval(data_iter, model, device, loss_fn):
 
             # We get the mse
             pred, trg = predictions.detach().cpu().numpy(), target.detach().cpu().numpy()
-            sse, __ = model_performance(pred, trg)
+            mse, rmse, sse = model_performance(pred, trg)
 
             epoch_loss += loss.item()*target.shape[0]
             epoch_sse += sse
@@ -83,7 +84,7 @@ def train(train_loader, validation_loader, model, number_epoch, optimizer, loss_
             predictions = model(feature).squeeze(1)
             optimizer.zero_grad()
             loss = loss_fn(predictions, target)
-            sse, __ = model_performance(predictions.detach().cpu().numpy(), target.detach().cpu().numpy())
+            _, _, sse = model_performance(predictions.detach().cpu().numpy(), target.detach().cpu().numpy())
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()*target.shape[0]
