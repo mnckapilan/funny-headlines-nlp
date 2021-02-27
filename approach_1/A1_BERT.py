@@ -179,9 +179,7 @@ def run_this_experiment():
 
                         _, _, preds, labels = eval(validation_loader, model)
 
-                        _, mse = model_performance(preds, labels, print_output=True)
-
-                        rmse = np.sqrt(mse)
+                        mse, rmse = model_performance(preds, labels, print_output=True)
 
                         print("Current Hyperparameters:")
                         print(

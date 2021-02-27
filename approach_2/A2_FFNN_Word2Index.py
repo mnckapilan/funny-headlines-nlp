@@ -8,10 +8,9 @@ from utils.processor import *
 
 
 class FFNN(nn.Module):
-    def __init__(self, glove_tensor, embedding_dim, vocab_size):
+    def __init__(self, embedding_dim, vocab_size):
         super(FFNN, self).__init__()
-        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0).from_pretrained(glove_tensor)
-
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=0)
         self.fc1 = nn.Linear(embedding_dim, 20)
         self.relu1 = nn.ReLU()
         self.fc2 = nn.Linear(20, 10)
@@ -64,10 +63,8 @@ def run_this_experiment():
     validation_loader = torch.utils.data.DataLoader(validation_dataset, batch_size=BATCH_SIZE,
                                                     collate_fn=collate_fn_padd)
 
-    glove_tensor, words_not_in_glove = build_embedding_tensor(joint_vocab, 100)
-
     EMBEDDING_DIM = 100
-    model = FFNN(glove_tensor, EMBEDDING_DIM, len(joint_vocab))
+    model = FFNN(EMBEDDING_DIM, len(joint_vocab))
     optimizer = optim.Adam(model.parameters())
     loss_fn = nn.MSELoss()
 
@@ -86,7 +83,7 @@ def run_this_experiment():
     test_dataset = Task1Dataset(test_vector_sentences, final_testing_grades)
 
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE,
-                                                    collate_fn=collate_fn_padd)
+                                              collate_fn=collate_fn_padd)
 
     _, _, preds, targets = eval(test_loader, model, device, loss_fn)
 

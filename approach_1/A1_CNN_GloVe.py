@@ -97,7 +97,8 @@ def run_this_experiment():
 
     _, _, preds, targets = eval(test_loader, model, device, loss_fn)
 
-    model_performance(preds, targets, print_output=True)
+    test_mse, test_rmse = model_performance(preds, targets)
+    print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')
 
     
 
