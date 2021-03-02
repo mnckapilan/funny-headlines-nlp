@@ -1,7 +1,6 @@
 import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset
 from utils.common_utils import set_gpu, train, eval, model_performance
 from utils.dataloaders import *
 from utils.processor import *
@@ -86,7 +85,7 @@ def run_this_experiment():
     test_dataset = Task1Dataset(test_vector_sentences, final_testing_grades)
 
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE,
-                                                    collate_fn=collate_fn_padd)
+                                              collate_fn=collate_fn_padd)
 
     _, _, preds, targets = eval(test_loader, model, device, loss_fn)
 

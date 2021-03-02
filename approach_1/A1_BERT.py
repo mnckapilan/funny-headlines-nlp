@@ -4,12 +4,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import Dataset
 from transformers import BertTokenizer, BertModel
-
 from utils.common_utils import set_gpu, model_performance, eval
 from utils.dataloaders import Task1Dataset, dataset_split, collate_fn_padd
-from utils.processor import create_edited_sentences, create_vocab, vectorize_sentences
+from utils.processor import create_edited_sentences
 
 
 def tokenize(corpus, tokenizer):
@@ -56,12 +54,9 @@ def run_this_experiment_with_optimal_parameters():
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
     train_df = pd.read_csv('data/task-1/train.csv')
-    test_df = pd.read_csv('data/task-1/test.csv')
 
     training_data = train_df['original']
     training_edits = train_df['edit']
-    test_data = test_df['original']
-    test_edits = test_df['edit']
 
     training_grades = train_df['meanGrade']
 
@@ -69,7 +64,7 @@ def run_this_experiment_with_optimal_parameters():
 
     training_tokens = tokenize(edited_training, tokenizer)
 
-    training_ids = to_ids(training_tokens)
+    training_ids = to_ids(training_tokens, tokenizer)
 
     print(training_tokens[100])
     print(training_ids[100])
@@ -116,7 +111,7 @@ def run_this_experiment_with_optimal_parameters():
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     train_bert(train_loader, model, epochs, device, optimizer, loss_fn)
-    _, _, preds, labels = eval(validation_loader, model, )
+    _, _, preds, labels = eval(validation_loader, model, device, loss_fn)
 
     mse, rmse, sse = model_performance(preds, labels, print_output=True)
     print("MSE: {}, RMSE: {}".format(mse, rmse))
@@ -130,7 +125,7 @@ def run_this_experiment_with_optimal_parameters():
 
     test_tokens = tokenize(final_edited_testing, tokenizer)
 
-    test_ids = to_ids(test_tokens)
+    test_ids = to_ids(test_tokens, tokenizer)
 
     test_dataset = Task1Dataset(test_ids, final_testing_grades)
 
@@ -146,27 +141,19 @@ def run_this_experiment_with_optimal_parameters():
 def hyperparameter_search():
     device = set_gpu()
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    vocab_size = len(tokenizer.vocab)
-    max_sentence_length = tokenizer.max_model_input_sizes['bert-base-uncased']
 
     train_df = pd.read_csv('data/task-1/train.csv')
-    test_df = pd.read_csv('data/task-1/test.csv')
 
     training_data = train_df['original']
     training_edits = train_df['edit']
-    test_data = test_df['original']
-    test_edits = test_df['edit']
 
     training_grades = train_df['meanGrade']
 
     edited_training = pd.Series(create_edited_sentences(training_data, training_edits))
-    edited_test = pd.Series(create_edited_sentences(test_data, test_edits))
 
     training_tokens = tokenize(edited_training, tokenizer)
-    testing_tokens = tokenize(edited_test, tokenizer)
 
-    training_ids = to_ids(training_tokens)
-    testing_ids = to_ids(testing_tokens)
+    training_ids = to_ids(training_tokens, tokenizer)
 
     print(training_tokens[100])
     print(training_ids[100])

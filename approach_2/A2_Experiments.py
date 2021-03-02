@@ -3,6 +3,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.svm import SVR
@@ -69,6 +70,17 @@ def run_Pipeline_experiment():
     training_bags_of_words, validation_bag_of_words, training_gradeset, validation_gradeset = get_initial_datasets()
 
     model = Pipeline([('poly', PolynomialFeatures(degree=3)), ('linear', LinearRegression(fit_intercept=False))])
+    model = model.fit(training_bags_of_words, training_gradeset)
+    predictions = model.predict(validation_bag_of_words)
+
+    test_mse, test_rmse, _ = model_performance(predictions, validation_gradeset)
+    print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')
+
+
+def run_MultiLayerPerceptron_experiment():
+    training_bags_of_words, validation_bag_of_words, training_gradeset, validation_gradeset = get_initial_datasets()
+
+    model = MLPRegressor()
     model = model.fit(training_bags_of_words, training_gradeset)
     predictions = model.predict(validation_bag_of_words)
 

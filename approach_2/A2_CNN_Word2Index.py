@@ -97,4 +97,3 @@ def run_this_experiment():
 
     test_mse, test_rmse, _ = model_performance(preds, targets)
     print(f'| Test Set MSE: {test_mse:.4f} | RMSE: {test_rmse:.4f} |')
-
